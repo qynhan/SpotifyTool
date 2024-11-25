@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 import base64
-from requests import post
+from requests import post, get
 import json
 
 load_dotenv()
@@ -39,6 +39,24 @@ def get_token():
         token = json_result["access_token"]
         return token
 
+def get_auth_header(token):
+    return {"Authorization": "Bearer " + token}
+
+def search_for_artist(token, artist_name):
+    url = "https://api.spotify.com/v1/search"
+    headers = get_auth_header(token)
+    query = f"?q={artist_name}&type=artist&limit=1"
+
+    query_url = url + query
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)["artists"]["items"]
+    if len(json_result) == 0:
+        print("No artist with this name exists ...")
+        return None
+    return json_result[0]
+
+
 token = get_token()
-print(token)
+result = search_for_artist(token, "ACDC")
+print(result["name"])
 # the token is what's used in headers when we send requests to API
